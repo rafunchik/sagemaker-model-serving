@@ -1,6 +1,6 @@
 # Bring-your-own Algorithm Sample
 
-This example shows how to package an algorithm for use with SageMaker. We have chosen a simple [scikit-learn][skl] implementation of decision trees to illustrate the procedure.
+This example shows how to package an algorithm for use with SageMaker. Using a Spotlight recommender.
 
 SageMaker supports two execution modes: _training_ where the algorithm uses input data to train a new model and _serving_ where the algorithm accepts HTTP requests and uses the previously trained model to do an inference (also called "scoring", "prediction", or "transformation").
 
@@ -20,7 +20,7 @@ The components are as follows:
 
 * __build\_and\_push.sh__: The script to build the Docker image (using the Dockerfile above) and push it to the [Amazon EC2 Container Registry (ECR)][ecr] so that it can be deployed to SageMaker. Specify the name of the image as the argument to this script. The script will generate a full name for the repository in your account and your configured AWS region. If this ECR repository doesn't exist, the script will create it.
 
-* __decision-trees__: The directory that contains the application to run in the container. See the next session for details about each of the files.
+* __model__: The directory that contains the application to run in the container. See the next session for details about each of the files.
 
 * __local-test__: A directory containing scripts and a setup for running a simple training and inference jobs locally so that you can test that everything is set up correctly. See below for details.
 
@@ -28,7 +28,7 @@ The components are as follows:
 
 When SageMaker starts a container, it will invoke the container with an argument of either __train__ or __serve__. We have set this container up so that the argument in treated as the command that the container executes. When training, it will run the __train__ program included and, when serving, it will run the __serve__ program.
 
-* __train__: The main program for training the model. When you build your own algorithm, you'll edit this to include your training code.
+* __train__: The main program for training the model. When you build your own algorithm, you'll edit this to include your training code. (currently dummy as the model is already trained and serialized).
 * __serve__: The wrapper that starts the inference server. In most cases, you can use this file as-is.
 * __wsgi.py__: The start up shell for the individual server workers. This only needs to be changed if you changed where predictor.py is located or is named.
 * __predictor.py__: The algorithm-specific inference server. This is the file that you modify with your own algorithm's code.
