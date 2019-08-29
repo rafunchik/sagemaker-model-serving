@@ -3,24 +3,18 @@
 
 from __future__ import print_function
 
+import logging
 import os
-import json
-import pickle
-from io import StringIO
-import sys
-import signal
-import traceback
 
 import flask
+import numpy as np
+import torch
 
-import pandas as pd
-import xgboost
-
-prefix = '/opt/ml/'
-model_path = os.path.join(prefix, 'model')
+model_path = os.environ.get('MODEL_PATH')
 
 # A singleton for holding the model. This simply loads the model and holds it.
 # It has a predict function that does a prediction based on the model and the input data.
+
 
 class ScoringService(object):
     model = None                # Where we keep the model when it's loaded
@@ -28,9 +22,9 @@ class ScoringService(object):
     @classmethod
     def get_model(cls):
         """Get the model object for this instance, loading it if it's not already loaded."""
-        if cls.model == None:
-            with open(os.path.join(model_path, 'xgboost-model.pkl'), 'rb') as inp:
-                cls.model = pickle.load(inp)
+        if cls.model is None:
+            # with open(model_path, 'rb') as inp:
+            cls.model = torch.load(model_path)
         return cls.model
 
     @classmethod
@@ -43,8 +37,10 @@ class ScoringService(object):
         clf = cls.get_model()
         return clf.predict(input)
 
+
 # The flask app for serving predictions
 app = flask.Flask(__name__)
+
 
 @app.route('/ping', methods=['GET'])
 def ping():
@@ -55,31 +51,19 @@ def ping():
     status = 200 if health else 404
     return flask.Response(response='\n', status=status, mimetype='application/json')
 
+
 @app.route('/invocations', methods=['POST'])
 def transformation():
-    """Do an inference on a single batch of data. In this sample server, we take data as CSV, convert
-    it to a pandas data frame for internal use and then convert the predictions back to CSV (which really
-    just means one prediction per line, since there's a single column.
+    """Do an inference on a single batch of data.
     """
     data = None
+    data = flask.request.get_json(force=True)
+    logging.error("dataa")
+    logging.error(data)
 
-    # Convert from CSV to pandas
-    if flask.request.content_type == 'text/csv':
-        data = flask.request.data.decode('utf-8')
-        s = StringIO(data)
-        data = pd.read_csv(s, header=None)
-        data = data.ix[:, 1:]
-    else:
-        return flask.Response(response='This predictor only supports CSV data', status=415, mimetype='text/plain')
-
-    print('Invoked with {} records'.format(data.shape[0]))
 
     # Do the prediction
-    predictions = ScoringService.predict(data)
+    predictions = ScoringService.predict(np.array([data['userid']]))[:10]  #data)
 
-    # Convert from numpy back to CSV
-    out = StringIO()
-    pd.DataFrame({'results':predictions}).to_csv(out, header=False, index=False)
-    result = out.getvalue()
-
-    return flask.Response(response=result, status=200, mimetype='text/csv')
+    p = np.array2string(predictions, precision=2, separator=',', suppress_small=True)
+    return flask.Response(response=p, status=200, mimetype='text/plain')
