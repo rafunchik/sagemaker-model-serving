@@ -1,0 +1,23 @@
+#!/usr/bin/env python3.5
+
+# dummy train
+import sys
+import os
+
+# These are the paths to where SageMaker mounts interesting things in your container.
+prefix = '/opt/ml/'
+
+input_path = prefix + 'input/data'
+output_path = os.path.join(prefix, 'output')
+model_path = os.path.join(prefix, 'model')
+param_path = os.path.join(prefix, 'input/config/hyperparameters.json')  # make it a dict with kwargs
+
+
+def train():
+    print('Training complete!!')
+
+
+if __name__ == '__main__':
+    train()
+    # A zero exit code causes the job to be marked a Succeeded.
+    sys.exit(0)

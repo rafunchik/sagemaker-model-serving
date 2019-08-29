@@ -1,5 +1,9 @@
-Exception during training: write() argument must be str, not bytes
+Exception during training: sklearn needs to be installed in order to use this module
 Traceback (most recent call last):
-  File "/opt/program/train", line 60, in train
-    pickle.dump(clf, out)
-TypeError: write() argument must be str, not bytes
+  File "/opt/program/train", line 54, in train
+    n_estimators=100, objective='binary:logistic'
+  File "/usr/local/lib/python3.5/dist-packages/xgboost/sklearn.py", line 417, in __init__
+    random_state, seed, missing, **kwargs)
+  File "/usr/local/lib/python3.5/dist-packages/xgboost/sklearn.py", line 135, in __init__
+    raise XGBoostError('sklearn needs to be installed in order to use this module')
+xgboost.core.XGBoostError: sklearn needs to be installed in order to use this module
